@@ -1,0 +1,9 @@
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: homelab-pool
+  namespace: metallb-system
+spec:
+  addresses:
+    # Must not overlap with DHCP leases or static node IPs (.101-.103)
+    - 192.168.1.150-192.168.1.200
