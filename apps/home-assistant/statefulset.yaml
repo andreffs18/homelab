@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: home-assistant
+  namespace: home-assistant
+spec:
+  serviceName: home-assistant
+  replicas: 1  # HA must be single-replica — it has no multi-instance mode
+  selector:
+    matchLabels:
+      app: home-assistant
+  template:
+    metadata:
+      labels:
+        app: home-assistant
+    spec:
+      # Pin to a specific node if you have USB devices (Zigbee/Z-Wave) connected
+      # nodeSelector:
+      #   kubernetes.io/hostname: mene
+      containers:
+        - name: home-assistant
+          image: ghcr.io/home-assistant/home-assistant:stable
+          env:
+            - name: TZ
+              value: Europe/London
+          ports:
+            - name: http
+              containerPort: 8123
+          securityContext:
+            # Required to access host Bluetooth hardware (hci0)
+            privileged: true
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: bluetooth
+              mountPath: /run/dbus
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8123
+            initialDelaySeconds: 60
+            periodSeconds: 30
+          resources:
+            requests:
+              memory: 256Mi
+              cpu: 200m
+            limits:
+              memory: 1Gi
+              cpu: 1000m
+      volumes:
+        # Exposes the host D-Bus socket so Home Assistant can talk to BlueZ (the Linux Bluetooth stack)
+        - name: bluetooth
+          hostPath:
+            path: /run/dbus
+      # Needed for mDNS device discovery across the LAN
+      # Set to true if using integrations that rely on local device discovery
+      # (disables network isolation — use with awareness)
+      # hostNetwork: true
+  volumeClaimTemplates:
+    - metadata:
+        name: config
+      spec:
+        accessModes: [ReadWriteOnce]
+        resources:
+          requests:
+            storage: 5Gi
