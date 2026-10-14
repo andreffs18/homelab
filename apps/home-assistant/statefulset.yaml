@@ -14,7 +14,11 @@ spec:
       labels:
         app: home-assistant
     spec:
-      # Pin to a specific node if you have USB devices (Zigbee/Z-Wave) connected
+      # Required for mDNS device discovery across the LAN
+      hostNetwork: true
+      # Ensures in-cluster DNS still works with hostNetwork
+      dnsPolicy: ClusterFirstWithHostNet
+      # Pin to a specific node — required with hostNetwork so HA always lands on the same IP
       # nodeSelector:
       #   kubernetes.io/hostname: mene
       containers:
@@ -52,10 +56,6 @@ spec:
         - name: bluetooth
           hostPath:
             path: /run/dbus
-      # Needed for mDNS device discovery across the LAN
-      # Set to true if using integrations that rely on local device discovery
-      # (disables network isolation — use with awareness)
-      # hostNetwork: true
   volumeClaimTemplates:
     - metadata:
         name: config
