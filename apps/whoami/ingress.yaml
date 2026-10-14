@@ -6,10 +6,9 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-    - host: whoami.homelab.local
-      http:
+    - http:
         paths:
-          - path: /
+          - path: /whoami
             pathType: Prefix
             backend:
               service:
