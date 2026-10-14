@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: matter-server
+  namespace: home-assistant
+spec:
+  serviceName: matter-server
+  replicas: 1
+  selector:
+    matchLabels:
+      app: matter-server
+  template:
+    metadata:
+      labels:
+        app: matter-server
+    spec:
+      # Required for mDNS device discovery across the LAN
+      hostNetwork: true
+      # Ensures in-cluster DNS still works with hostNetwork
+      dnsPolicy: ClusterFirstWithHostNet
+      # Pin to the same node as Home Assistant if using Bluetooth commissioning
+      # nodeSelector:
+      #   kubernetes.io/hostname: mene
+      containers:
+        - name: matter-server
+          image: ghcr.io/home-assistant-libs/python-matter-server:stable
+          args:
+            - --storage-path=/data
+            - --paa-root-cert-dir=/data/credentials
+            - --bluetooth-adapter=0
+          ports:
+            - name: ws
+              containerPort: 5580
+              hostPort: 5580
+          securityContext:
+            # Required for Bluetooth (BLE commissioning) access
+            privileged: true
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: bluetooth
+              mountPath: /run/dbus
+          resources:
+            requests:
+              memory: 64Mi
+              cpu: 100m
+            limits:
+              memory: 256Mi
+              cpu: 500m
+      volumes:
+        # D-Bus socket so matter-server can talk to BlueZ for BLE commissioning
+        - name: bluetooth
+          hostPath:
+            path: /run/dbus
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: [ReadWriteOnce]
+        resources:
+          requests:
+            storage: 1Gi
