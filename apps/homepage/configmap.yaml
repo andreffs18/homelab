@@ -1,0 +1,54 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: homepage-config
+  namespace: homepage
+data:
+  settings.yaml: |
+    title: Homelab
+    favicon: https://raw.githubusercontent.com/gethomepage/homepage/main/public/favicon.ico
+    theme: dark
+    color: slate
+    headerStyle: clean
+
+  services.yaml: |
+    - Infrastructure:
+        - ArgoCD:
+            href: http://argocd.homelab.local
+            description: GitOps continuous delivery
+            icon: argocd.png
+        # - Pi-hole:
+        #     href: http://pihole.homelab.local/admin
+        #     description: DNS sinkhole & ad blocker
+        #     icon: pi-hole.png
+
+    - Apps:
+        - Home Assistant:
+            href: http://homeassistant.homelab.local
+            description: Home automation
+            icon: home-assistant.png
+        # - Grafana:
+        #     href: http://grafana.homelab.local
+        #     description: Metrics & dashboards
+        #     icon: grafana.png
+        - Whoami:
+            href: http://whoami.homelab.local
+            description: Debug/echo service
+            icon: docker-moby.png
+
+  widgets.yaml: |
+    - datetime:
+        text_size: xl
+        format:
+          dateStyle: long
+          timeStyle: short
+          hour12: false
+
+  bookmarks.yaml: |
+    []
+
+  docker.yaml: |
+    {}
+
+  kubernetes.yaml: |
+    mode: disabled
