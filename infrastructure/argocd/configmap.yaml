@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-cmd-params-cm
+  namespace: argocd
+data:
+  # Run ArgoCD server over HTTP instead of HTTPS.
+  # Required for login to work behind an HTTP-only ingress — without this,
+  # ArgoCD sets Secure cookies which browsers reject over plain HTTP.
+  # Remove this once cert-manager/TLS is set up on the ingress.
+  server.insecure: "true"
