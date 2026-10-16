@@ -22,15 +22,25 @@ data:
         #     description: DNS sinkhole & ad blocker
         #     icon: pi-hole.png
 
+    - Monitoring:
+        - Grafana:
+            href: http://grafana.homelab.local
+            description: Metrics & dashboards
+            icon: grafana.png
+        - Prometheus:
+            href: http://prometheus.homelab.local
+            description: Metrics collection
+            icon: prometheus.png
+        - Alertmanager:
+            href: http://alertmanager.homelab.local
+            description: Alert routing
+            icon: alertmanager.png
+
     - Apps:
         - Home Assistant:
             href: http://homeassistant.homelab.local
             description: Home automation
             icon: home-assistant.png
-        # - Grafana:
-        #     href: http://grafana.homelab.local
-        #     description: Metrics & dashboards
-        #     icon: grafana.png
         - Whoami:
             href: http://whoami.homelab.local
             description: Debug/echo service
