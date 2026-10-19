@@ -9,7 +9,7 @@ spec:
   project: default
   source:
     repoURL: https://github.com/andreffs18/homelab.git
-    targetRevision: HEAD
+    targetRevision: master
     path: apps/home-assistant
     directory:
       exclude: application.yaml

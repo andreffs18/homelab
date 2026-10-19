@@ -21,6 +21,41 @@ spec:
       # Pin to a specific node — required with hostNetwork so HA always lands on the same IP
       # nodeSelector:
       #   kubernetes.io/hostname: mene
+      initContainers:
+        - name: custom-components-installer
+          image: alpine:3.19
+          command:
+            - sh
+            - -c
+            - |
+              set -e
+              apk add --no-cache wget unzip tar > /dev/null 2>&1
+
+              # Install HACS
+              if [ ! -d "/config/custom_components/hacs" ]; then
+                echo "Installing HACS 2.0.5..."
+                mkdir -p /config/custom_components
+                wget -qO /tmp/hacs.zip https://github.com/hacs/integration/releases/download/2.0.5/hacs.zip
+                unzip -q /tmp/hacs.zip -d /config/custom_components/hacs/
+                rm /tmp/hacs.zip
+                echo "HACS installed"
+              fi
+
+              # Install IKEA Bilresa custom component + blueprints
+              if [ ! -d "/config/custom_components/ikea_bilresa" ]; then
+                echo "Installing IKEA Bilresa v0.5.0..."
+                wget -qO /tmp/bilresa.tar.gz https://github.com/Vituhlos/ha-ikea-bilresa/archive/refs/tags/v0.5.0.tar.gz
+                mkdir -p /tmp/bilresa
+                tar -xzf /tmp/bilresa.tar.gz -C /tmp/bilresa --strip-components=1
+                cp -r /tmp/bilresa/custom_components/ikea_bilresa /config/custom_components/
+                mkdir -p /config/blueprints/automation
+                cp -r /tmp/bilresa/blueprints/automation/ikea_bilresa /config/blueprints/automation/
+                rm -rf /tmp/bilresa /tmp/bilresa.tar.gz
+                echo "IKEA Bilresa installed"
+              fi
+          volumeMounts:
+            - name: config
+              mountPath: /config
       containers:
         - name: home-assistant
           image: ghcr.io/home-assistant/home-assistant:stable
