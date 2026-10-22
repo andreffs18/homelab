@@ -68,6 +68,10 @@ spec:
           securityContext:
             # Required to access host Bluetooth hardware (hci0)
             privileged: true
+            capabilities:
+              add:
+                - NET_ADMIN
+                - NET_RAW
           volumeMounts:
             - name: config
               mountPath: /config
