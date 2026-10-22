@@ -8,15 +8,32 @@ data:
     title: Homelab
     favicon: https://raw.githubusercontent.com/gethomepage/homepage/main/public/favicon.ico
     theme: dark
-    color: slate
-    headerStyle: clean
+    color: zinc
+    headerStyle: boxedWidgets
+    cardBlur: md
+    useEqualHeights: true
+    hideVersion: true
+    iconStyle: gradient
+    layout:
+      Infrastructure:
+        style: row
+        columns: 2
+        icon: mdi-server-network
+      Monitoring:
+        style: row
+        columns: 3
+        icon: mdi-chart-line
+      Apps:
+        style: row
+        columns: 2
+        icon: mdi-apps
 
   services.yaml: |
     - Infrastructure:
         - ArgoCD:
             href: http://argocd.homelab.local
             description: GitOps continuous delivery
-            icon: argocd.png
+            icon: argo-cd.png
         # - Pi-hole:
         #     href: http://pihole.homelab.local/admin
         #     description: DNS sinkhole & ad blocker
@@ -47,6 +64,16 @@ data:
             icon: docker-moby.png
 
   widgets.yaml: |
+    - greeting:
+        text_size: 3xl
+        text: Welcome home
+    - resources:
+        cpu: true
+        memory: true
+        disk: /
+    - search:
+        provider: duckduckgo
+        target: _blank
     - datetime:
         text_size: xl
         format:
