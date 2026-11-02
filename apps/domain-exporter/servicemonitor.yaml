@@ -1,0 +1,17 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: domain-exporter
+  namespace: domain-exporter
+  labels:
+    # kube-prometheus-stack only selects resources labelled with its Helm release name
+    release: monitoring
+spec:
+  selector:
+    matchLabels:
+      app: domain-exporter
+  endpoints:
+    - port: metrics
+      path: /metrics
+      interval: 1h
+      scrapeTimeout: 30s

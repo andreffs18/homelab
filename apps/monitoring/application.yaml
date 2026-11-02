@@ -52,6 +52,11 @@ spec:
                 revision: 28
                 datasource: Prometheus
 
+        # Prometheus Operator: watches ServiceMonitor/PrometheusRule/Probe CRDs
+        # and generates the real Prometheus scrape config from them
+        prometheusOperator:
+          enabled: true
+
         prometheus:
           ingress:
             enabled: true
@@ -59,7 +64,17 @@ spec:
             hosts:
               - prometheus.homelab.local
           prometheusSpec:
-            retention: 15d
+            # Only pick up ServiceMonitors/PrometheusRules labelled release=monitoring
+            # (the Helm release name), from any namespace
+            serviceMonitorSelector:
+              matchLabels:
+                release: monitoring
+            serviceMonitorNamespaceSelector: {}
+            ruleSelector:
+              matchLabels:
+                release: monitoring
+            ruleNamespaceSelector: {}
+            retention: 90d
             storageSpec:
               volumeClaimTemplate:
                 spec:

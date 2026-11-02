@@ -1,0 +1,18 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: domain-exporter
+  namespace: domain-exporter
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: domains.homelab.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: domain-exporter
+                port:
+                  number: 9222

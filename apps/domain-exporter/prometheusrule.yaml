@@ -1,0 +1,45 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: domain-exporter
+  namespace: domain-exporter
+  labels:
+    release: monitoring
+spec:
+  groups:
+    - name: domain
+      rules:
+        - alert: DomainExpiringLessThan30Days
+          expr: >
+            (
+              min_over_time(domain_expiry_days[3h]) > 5
+              and
+              max_over_time(domain_expiry_days[3h]) < 30
+            )
+            unless
+            absent_over_time(domain_expiry_days[3h])
+          for: 1h
+          labels:
+            severity: warning
+          annotations:
+            summary: "{{ $labels.domain }}: domain is expiring"
+            description: "Domain {{ $labels.domain }} will expire in less than 30 days"
+        - alert: DomainExpiringLessThan5Days
+          expr: >
+            max_over_time(domain_expiry_days[3h]) <= 5
+            unless
+            absent_over_time(domain_expiry_days[3h])
+          for: 1h
+          labels:
+            severity: critical
+          annotations:
+            summary: "{{ $labels.domain }}: domain is expiring"
+            description: "Domain {{ $labels.domain }} will expire in less than 5 days"
+        - alert: DomainProbeFailure
+          expr: domain_probe_success == 0
+          for: 2h
+          labels:
+            severity: warning
+          annotations:
+            summary: "{{ $labels.domain }}: cannot probe"
+            description: "Domain {{ $labels.domain }} is not valid or whois lookup failed"

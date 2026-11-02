@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: domain-exporter
+  namespace: domain-exporter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: domain-exporter
+  template:
+    metadata:
+      labels:
+        app: domain-exporter
+    spec:
+      containers:
+        - name: domain-exporter
+          image: caarlos0/domain_exporter:v1.25.0
+          args:
+            - --config=/config/domains.yaml
+          ports:
+            - name: metrics
+              containerPort: 9222
+          readinessProbe:
+            httpGet:
+              path: /
+              port: metrics
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              memory: 128Mi
+          volumeMounts:
+            - name: config
+              mountPath: /config
+      volumes:
+        - name: config
+          configMap:
+            name: domain-exporter-config

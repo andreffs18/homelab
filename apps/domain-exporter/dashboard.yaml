@@ -1,0 +1,233 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: domain-exporter-dashboard
+  namespace: domain-exporter
+  labels:
+    # Grafana sidecar loads any ConfigMap (all namespaces) with this label
+    grafana_dashboard: "1"
+data:
+  domain-exporter.json: |
+    {
+      "uid": "domain-exporter",
+      "title": "Domain Exporter",
+      "tags": ["domains"],
+      "timezone": "browser",
+      "schemaVersion": 39,
+      "version": 1,
+      "refresh": "5m",
+      "time": { "from": "now-30d", "to": "now" },
+      "templating": {
+        "list": [
+          {
+            "name": "datasource",
+            "label": "Data source",
+            "type": "datasource",
+            "query": "prometheus"
+          },
+          {
+            "name": "domain",
+            "label": "Domain",
+            "type": "query",
+            "datasource": { "type": "prometheus", "uid": "${datasource}" },
+            "query": "label_values(domain_expiry_days, domain)",
+            "refresh": 2,
+            "multi": true,
+            "includeAll": true,
+            "current": { "text": "All", "value": "$__all" }
+          }
+        ]
+      },
+      "panels": [
+        {
+          "id": 1,
+          "type": "stat",
+          "title": "Days until first expiry",
+          "gridPos": { "h": 5, "w": 6, "x": 0, "y": 0 },
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "targets": [
+            { "refId": "A", "expr": "min(last_over_time(domain_expiry_days{domain=~\"$domain\"}[2h]))", "instant": true }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "d",
+              "decimals": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "red", "value": null },
+                  { "color": "orange", "value": 6 },
+                  { "color": "green", "value": 30 }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "options": { "colorMode": "background", "reduceOptions": { "calcs": ["lastNotNull"] } }
+        },
+        {
+          "id": 2,
+          "type": "stat",
+          "title": "Failing probes",
+          "gridPos": { "h": 5, "w": 6, "x": 6, "y": 0 },
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "targets": [
+            { "refId": "A", "expr": "count(last_over_time(domain_probe_success{domain=~\"$domain\"}[2h]) == 0) or vector(0)", "instant": true }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "none",
+              "decimals": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "red", "value": 1 }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "options": { "colorMode": "background", "reduceOptions": { "calcs": ["lastNotNull"] } }
+        },
+        {
+          "id": 3,
+          "type": "stat",
+          "title": "Domains monitored",
+          "gridPos": { "h": 5, "w": 6, "x": 12, "y": 0 },
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "targets": [
+            { "refId": "A", "expr": "count(last_over_time(domain_expiry_days{domain=~\"$domain\"}[2h]))", "instant": true }
+          ],
+          "fieldConfig": { "defaults": { "unit": "none", "decimals": 0 }, "overrides": [] },
+          "options": { "reduceOptions": { "calcs": ["lastNotNull"] } }
+        },
+        {
+          "id": 4,
+          "type": "stat",
+          "title": "Firing domain alerts",
+          "gridPos": { "h": 5, "w": 6, "x": 18, "y": 0 },
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "targets": [
+            { "refId": "A", "expr": "count(ALERTS{alertname=~\"Domain.*\", alertstate=\"firing\"}) or vector(0)", "instant": true }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "none",
+              "decimals": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "red", "value": 1 }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "options": { "colorMode": "background", "reduceOptions": { "calcs": ["lastNotNull"] } }
+        },
+        {
+          "id": 5,
+          "type": "table",
+          "title": "Domains",
+          "gridPos": { "h": 7, "w": 24, "x": 0, "y": 5 },
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "targets": [
+            { "refId": "A", "expr": "last_over_time(domain_expiry_days{domain=~\"$domain\"}[2h])", "instant": true, "format": "table" },
+            { "refId": "B", "expr": "last_over_time(domain_probe_success{domain=~\"$domain\"}[2h])", "instant": true, "format": "table" }
+          ],
+          "transformations": [
+            { "id": "joinByField", "options": { "byField": "domain", "mode": "outer" } },
+            {
+              "id": "filterFieldsByName",
+              "options": { "include": { "names": ["domain", "Value #A", "Value #B"] } }
+            },
+            {
+              "id": "organize",
+              "options": {
+                "indexByName": { "domain": 0, "Value #A": 1, "Value #B": 2 },
+                "renameByName": { "domain": "Domain", "Value #A": "Expires in", "Value #B": "Status" }
+              }
+            },
+            { "id": "sortBy", "options": { "sort": [{ "field": "Expires in" }] } }
+          ],
+          "fieldConfig": {
+            "defaults": { "custom": { "align": "center" } },
+            "overrides": [
+              {
+                "matcher": { "id": "byName", "options": "Expires in" },
+                "properties": [
+                  { "id": "unit", "value": "d" },
+                  { "id": "decimals", "value": 0 },
+                  { "id": "custom.cellOptions", "value": { "type": "color-background" } },
+                  {
+                    "id": "thresholds",
+                    "value": {
+                      "mode": "absolute",
+                      "steps": [
+                        { "color": "red", "value": null },
+                        { "color": "orange", "value": 6 },
+                        { "color": "green", "value": 30 }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": { "id": "byName", "options": "Status" },
+                "properties": [
+                  {
+                    "id": "mappings",
+                    "value": [
+                      {
+                        "type": "value",
+                        "options": {
+                          "0": { "text": "FAIL", "color": "red" },
+                          "1": { "text": "OK", "color": "green" }
+                        }
+                      }
+                    ]
+                  },
+                  { "id": "custom.cellOptions", "value": { "type": "color-background" } }
+                ]
+              }
+            ]
+          },
+          "options": { "showHeader": true }
+        },
+        {
+          "id": 6,
+          "type": "timeseries",
+          "title": "Days until expiry",
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 12 },
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "targets": [
+            { "refId": "A", "expr": "last_over_time(domain_expiry_days{domain=~\"$domain\"}[2h])", "legendFormat": "{{domain}}" }
+          ],
+          "fieldConfig": { "defaults": { "unit": "d" }, "overrides": [] }
+        },
+        {
+          "id": 7,
+          "type": "timeseries",
+          "title": "Probe success",
+          "gridPos": { "h": 8, "w": 6, "x": 12, "y": 12 },
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "targets": [
+            { "refId": "A", "expr": "last_over_time(domain_probe_success{domain=~\"$domain\"}[2h])", "legendFormat": "{{domain}}" }
+          ],
+          "fieldConfig": { "defaults": { "min": 0, "max": 1, "decimals": 0 }, "overrides": [] }
+        },
+        {
+          "id": 8,
+          "type": "timeseries",
+          "title": "Probe duration",
+          "gridPos": { "h": 8, "w": 6, "x": 18, "y": 12 },
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "targets": [
+            { "refId": "A", "expr": "last_over_time(domain_probe_duration_seconds{domain=~\"$domain\"}[2h])", "legendFormat": "{{domain}}" }
+          ],
+          "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] }
+        }
+      ]
+    }

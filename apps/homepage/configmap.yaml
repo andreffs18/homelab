@@ -21,7 +21,7 @@ data:
         icon: mdi-server-network
       Monitoring:
         style: row
-        columns: 3
+        columns: 4
         icon: mdi-chart-line
       Apps:
         style: row
@@ -52,6 +52,10 @@ data:
             href: http://alertmanager.homelab.local
             description: Alert routing
             icon: alertmanager.png
+        - Domain Exporter:
+            href: http://domains.homelab.local/metrics
+            description: Domain expiry tracking
+            icon: mdi-web
 
     - Apps:
         - Home Assistant:

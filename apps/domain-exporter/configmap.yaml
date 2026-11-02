@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: domain-exporter-config
+  namespace: domain-exporter
+data:
+  domains.yaml: |
+    domains:
+      - andreffs.com
