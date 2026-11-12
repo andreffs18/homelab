@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tev1
+  namespace: laya
+spec:
+  replicas: 1
+  # RWO volume: the old pod must stop before the new one starts.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels: { app: tev1 }
+  template:
+    metadata:
+      labels: { app: tev1 }
+    spec:
+      containers:
+        - name: ollama
+          # TODO: replace with your custom build if /v1/systemone is not in stock Ollama.
+          image: ollama/ollama:latest
+          ports: [{ containerPort: 11434 }]
+          env:
+            - { name: OLLAMA_HOST, value: "0.0.0.0:11434" }
+            # CPU inference scales poorly with concurrency on old 2-4 core CPUs.
+            - { name: OLLAMA_NUM_PARALLEL, value: "1" }
+            - { name: OLLAMA_MAX_LOADED_MODELS, value: "1" }
+            - { name: OLLAMA_KEEP_ALIVE, value: "-1" }
+          resources:
+            requests: { cpu: "2", memory: 6Gi }
+            limits: { memory: 10Gi }
+          volumeMounts:
+            - { name: models, mountPath: /root/.ollama }
+          lifecycle:
+            postStart:
+              exec:
+                # TODO: replace with however you actually get tev1:4b (ollama create from GGUF, etc.).
+                # Runs in the background so the pull doesn't block container start.
+                command: ["sh", "-c", "sleep 5; nohup ollama pull tev1:4b >/proc/1/fd/1 2>&1 &"]
+          # Ready only once the model is present.
+          readinessProbe:
+            exec:
+              command: ["sh", "-c", "ollama list | grep -q 'tev1:4b'"]
+            periodSeconds: 10
+            timeoutSeconds: 5
+          livenessProbe:
+            httpGet: { path: /api/tags, port: 11434 }
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 10
+      volumes:
+        - name: models
+          persistentVolumeClaim:
+            claimName: tev1-models
