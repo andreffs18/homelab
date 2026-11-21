@@ -1,0 +1,41 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: external-secrets
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    # After cert-manager (wave 0), which issues the SDK server's TLS cert
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  project: default
+  sources:
+    - repoURL: https://charts.external-secrets.io
+      chart: external-secrets
+      targetRevision: 2.15.0
+      helm:
+        values: |
+          installCRDs: true
+          # Bridge between ESO and Bitwarden Secrets Manager (requires TLS)
+          bitwarden-sdk-server:
+            enabled: true
+          serviceMonitor:
+            enabled: true
+    - repoURL: https://github.com/andreffs18/homelab.git
+      targetRevision: HEAD
+      path: infrastructure/external-secrets
+      directory:
+        exclude: application.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: external-secrets
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+      # ClusterSecretStore CRD is installed by the chart in the same sync
+      - SkipDryRunOnMissingResource=true
