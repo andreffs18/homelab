@@ -20,6 +20,9 @@ spec:
             enabled: true
             servicemonitor:
               enabled: true
+              labels:
+                # kube-prometheus-stack only selects resources labelled with its Helm release name
+                release: monitoring
     - repoURL: https://github.com/andreffs18/homelab.git
       targetRevision: HEAD
       path: infrastructure/cert-manager

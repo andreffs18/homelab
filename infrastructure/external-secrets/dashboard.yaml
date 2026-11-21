@@ -6,6 +6,9 @@ metadata:
   labels:
     # Grafana sidecar loads any ConfigMap (all namespaces) with this label
     grafana_dashboard: "1"
+  annotations:
+    # Grafana folder the sidecar puts this dashboard in
+    grafana_folder: Homelab
 data:
   external-secrets.json: |
     {
