@@ -25,8 +25,12 @@ data:
         icon: mdi-chart-line
       Apps:
         style: row
-        columns: 2
+        columns: 3
         icon: mdi-apps
+      Links:
+        style: row
+        columns: 3
+        icon: mdi-link-variant
 
   services.yaml: |
     - Infrastructure:
@@ -34,6 +38,7 @@ data:
             href: https://argocd.home.andreffs.com
             description: GitOps continuous delivery
             icon: argo-cd.png
+            siteMonitor: https://argocd.home.andreffs.com/healthz
         # - Pi-hole:
         #     href: https://pihole.home.andreffs.com/admin
         #     description: DNS sinkhole & ad blocker
@@ -44,28 +49,42 @@ data:
             href: https://grafana.home.andreffs.com
             description: Metrics & dashboards
             icon: grafana.png
+            siteMonitor: https://grafana.home.andreffs.com/api/health
         - Prometheus:
             href: https://prometheus.home.andreffs.com
             description: Metrics collection
             icon: prometheus.png
+            siteMonitor: https://prometheus.home.andreffs.com/-/healthy
+            widget:
+              type: prometheus
+              url: http://monitoring-kube-prometheus-prometheus.monitoring.svc:9090
         - Alertmanager:
             href: https://alertmanager.home.andreffs.com
             description: Alert routing
             icon: alertmanager.png
+            siteMonitor: https://alertmanager.home.andreffs.com/-/healthy
         - Domain Exporter:
             href: https://domains.home.andreffs.com/metrics
             description: Domain expiry tracking
             icon: mdi-web
+            siteMonitor: https://domains.home.andreffs.com
 
     - Apps:
         - Home Assistant:
             href: https://homeassistant.home.andreffs.com
             description: Home automation
             icon: home-assistant.png
+            siteMonitor: https://homeassistant.home.andreffs.com
+        - tev1:
+            href: https://tev1.home.andreffs.com
+            description: Ollama classifier API (no auth, LAN only)
+            icon: ollama.png
+            siteMonitor: https://tev1.home.andreffs.com
         - Whoami:
             href: https://whoami.home.andreffs.com
             description: Debug/echo service
             icon: docker-moby.png
+            siteMonitor: https://whoami.home.andreffs.com/health
 
   widgets.yaml: |
     - greeting:
@@ -86,7 +105,19 @@ data:
           hour12: false
 
   bookmarks.yaml: |
-    []
+    - Links:
+        - Homelab repo:
+            - icon: github.png
+              href: https://github.com/andreffs18/homelab
+              description: GitOps source of truth
+        - Cloudflare:
+            - icon: cloudflare.png
+              href: https://dash.cloudflare.com
+              description: DNS for andreffs.com
+        - Bitwarden Secrets:
+            - icon: bitwarden.png
+              href: https://vault.bitwarden.com/#/sm
+              description: Secrets Manager
 
   docker.yaml: |
     {}
