@@ -3,11 +3,9 @@ kind: Service
 metadata:
   name: tev1
   namespace: laya
-  annotations:
-    metallb.io/loadBalancerIPs: 192.168.1.153
 spec:
-  # LoadBalancer so the classifier can run outside the cluster: http://192.168.1.153:11434
+  # ClusterIP: reachable only through the ingress (https://tev1.home.andreffs.com)
   # Ollama has no auth; keep this on your LAN only.
-  type: LoadBalancer
+  type: ClusterIP
   selector: { app: tev1 }
   ports: [{ port: 11434, targetPort: 11434 }]

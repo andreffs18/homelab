@@ -1,0 +1,29 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: tev1
+  namespace: laya
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
+    # Ollama responses can take minutes (model load + generation); nginx defaults to 60s
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+    # No upload limit, so large prompts / images aren't rejected with 413
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - tev1.home.andreffs.com
+      secretName: tev1-tls
+  rules:
+    - host: tev1.home.andreffs.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: tev1
+                port:
+                  number: 11434
