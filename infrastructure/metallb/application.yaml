@@ -20,6 +20,13 @@ spec:
               - key: node-role.kubernetes.io/control-plane
                 operator: Exists
                 effect: NoSchedule
+          speaker:
+            # FRR is only needed for BGP mode; we use L2 (see l2advertisement.yaml).
+            # With FRR enabled, the speaker retries a failing FRR config reload every
+            # ~5s ("permission denied") and spams the logs; disabling it also drops the
+            # frr, frr-metrics and reloader sidecars.
+            frr:
+              enabled: false
     - repoURL: https://github.com/andreffs18/homelab.git
       targetRevision: HEAD
       path: infrastructure/metallb
