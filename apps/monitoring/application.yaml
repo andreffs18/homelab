@@ -7,136 +7,146 @@ metadata:
     - resources-finalizer.argocd.argoproj.io
 spec:
   project: default
-  source:
-    repoURL: https://prometheus-community.github.io/helm-charts
-    chart: kube-prometheus-stack
-    targetRevision: 67.4.0
-    helm:
-      values: |
-        grafana:
-          enabled: true
-          adminPassword: changeme  # TODO: replace with sealed secret
-          grafana.ini:
-            server:
-              root_url: https://grafana.home.andreffs.com
-            security:
-              cookie_secure: true
-          ingress:
-            enabled: true
-            ingressClassName: nginx
-            annotations:
-              cert-manager.io/cluster-issuer: letsencrypt
-            hosts:
-              - grafana.home.andreffs.com
-            tls:
-              - secretName: grafana-tls
+  sources:
+    - repoURL: https://prometheus-community.github.io/helm-charts
+      chart: kube-prometheus-stack
+      targetRevision: 67.4.0
+      helm:
+        values: |
+            grafana:
+              enabled: true
+              admin:
+                # Synced from Bitwarden by apps/monitoring/externalsecret.yaml
+                existingSecret: grafana-admin
+                userKey: admin-user
+                passwordKey: admin-password
+              grafana.ini:
+                server:
+                  root_url: https://grafana.home.andreffs.com
+                security:
+                  cookie_secure: true
+              ingress:
+                enabled: true
+                ingressClassName: nginx
+                annotations:
+                  cert-manager.io/cluster-issuer: letsencrypt
                 hosts:
                   - grafana.home.andreffs.com
-          dashboardProviders:
-            dashboardproviders.yaml:
-              apiVersion: 1
-              providers:
-                - name: community
-                  orgId: 1
-                  folder: Community
-                  type: file
-                  disableDeletion: false
-                  editable: true
-                  options:
-                    path: /var/lib/grafana/dashboards/community
-          sidecar:
-            dashboards:
-              # ConfigMap dashboards pick their folder from this annotation
-              folderAnnotation: grafana_folder
-              provider:
-                foldersFromFilesStructure: true
-          dashboards:
-            community:
-              node-exporter-full:
-                gnetId: 1860
-                revision: 37
-                datasource: Prometheus
-              k8s-views-global:
-                gnetId: 15757
-                revision: 37
-                datasource: Prometheus
-              k8s-views-nodes:
-                gnetId: 15759
-                revision: 29
-                datasource: Prometheus
-              k8s-views-pods:
-                gnetId: 15760
-                revision: 28
-                datasource: Prometheus
-              cert-manager:
-                gnetId: 20842
-                revision: 3
-                datasource: Prometheus
+                tls:
+                  - secretName: grafana-tls
+                    hosts:
+                      - grafana.home.andreffs.com
+              dashboardProviders:
+                dashboardproviders.yaml:
+                  apiVersion: 1
+                  providers:
+                    - name: community
+                      orgId: 1
+                      folder: Community
+                      type: file
+                      disableDeletion: false
+                      editable: true
+                      options:
+                        path: /var/lib/grafana/dashboards/community
+              sidecar:
+                dashboards:
+                  # ConfigMap dashboards pick their folder from this annotation
+                  folderAnnotation: grafana_folder
+                  provider:
+                    foldersFromFilesStructure: true
+              dashboards:
+                community:
+                  node-exporter-full:
+                    gnetId: 1860
+                    revision: 37
+                    datasource: Prometheus
+                  k8s-views-global:
+                    gnetId: 15757
+                    revision: 37
+                    datasource: Prometheus
+                  k8s-views-nodes:
+                    gnetId: 15759
+                    revision: 29
+                    datasource: Prometheus
+                  k8s-views-pods:
+                    gnetId: 15760
+                    revision: 28
+                    datasource: Prometheus
+                  cert-manager:
+                    gnetId: 20842
+                    revision: 3
+                    datasource: Prometheus
 
-        # Prometheus Operator: watches ServiceMonitor/PrometheusRule/Probe CRDs
-        # and generates the real Prometheus scrape config from them
-        prometheusOperator:
-          enabled: true
+            # Prometheus Operator: watches ServiceMonitor/PrometheusRule/Probe CRDs
+            # and generates the real Prometheus scrape config from them
+            prometheusOperator:
+              enabled: true
 
-        prometheus:
-          ingress:
-            enabled: true
-            ingressClassName: nginx
-            annotations:
-              cert-manager.io/cluster-issuer: letsencrypt
-            hosts:
-              - prometheus.home.andreffs.com
-            tls:
-              - secretName: prometheus-tls
+            prometheus:
+              ingress:
+                enabled: true
+                ingressClassName: nginx
+                annotations:
+                  cert-manager.io/cluster-issuer: letsencrypt
                 hosts:
                   - prometheus.home.andreffs.com
-          prometheusSpec:
-            externalUrl: https://prometheus.home.andreffs.com
-            # Only pick up ServiceMonitors/PrometheusRules labelled release=monitoring
-            # (the Helm release name), from any namespace
-            serviceMonitorSelector:
-              matchLabels:
-                release: monitoring
-            serviceMonitorNamespaceSelector: {}
-            ruleSelector:
-              matchLabels:
-                release: monitoring
-            ruleNamespaceSelector: {}
-            retention: 90d
-            storageSpec:
-              volumeClaimTemplate:
-                spec:
-                  storageClassName: local-path
-                  accessModes: [ReadWriteOnce]
-                  resources:
-                    requests:
-                      storage: 20Gi
-            additionalScrapeConfigs:
-              - job_name: nginx-ingress
-                static_configs:
-                  - targets: [ingress-nginx-controller-metrics.ingress-nginx.svc:10254]
+                tls:
+                  - secretName: prometheus-tls
+                    hosts:
+                      - prometheus.home.andreffs.com
+              prometheusSpec:
+                externalUrl: https://prometheus.home.andreffs.com
+                # Only pick up ServiceMonitors/PrometheusRules labelled release=monitoring
+                # (the Helm release name), from any namespace
+                serviceMonitorSelector:
+                  matchLabels:
+                    release: monitoring
+                serviceMonitorNamespaceSelector: {}
+                ruleSelector:
+                  matchLabels:
+                    release: monitoring
+                ruleNamespaceSelector: {}
+                retention: 90d
+                storageSpec:
+                  volumeClaimTemplate:
+                    spec:
+                      storageClassName: local-path
+                      accessModes: [ReadWriteOnce]
+                      resources:
+                        requests:
+                          storage: 20Gi
+                additionalScrapeConfigs:
+                  - job_name: nginx-ingress
+                    static_configs:
+                      - targets: [ingress-nginx-controller-metrics.ingress-nginx.svc:10254]
 
-        alertmanager:
-          enabled: true
-          alertmanagerSpec:
-            externalUrl: https://alertmanager.home.andreffs.com
-          ingress:
-            enabled: true
-            ingressClassName: nginx
-            annotations:
-              cert-manager.io/cluster-issuer: letsencrypt
-            hosts:
-              - alertmanager.home.andreffs.com
-            tls:
-              - secretName: alertmanager-tls
+            alertmanager:
+              enabled: true
+              alertmanagerSpec:
+                externalUrl: https://alertmanager.home.andreffs.com
+              ingress:
+                enabled: true
+                ingressClassName: nginx
+                annotations:
+                  cert-manager.io/cluster-issuer: letsencrypt
                 hosts:
                   - alertmanager.home.andreffs.com
+                tls:
+                  - secretName: alertmanager-tls
+                    hosts:
+                      - alertmanager.home.andreffs.com
 
-        nodeExporter:
-          enabled: true
+            nodeExporter:
+              enabled: true
 
-        kubeStateMetrics:
-          enabled: true
+            kubeStateMetrics:
+              enabled: true
+    # Grafana admin ExternalSecret (synced from Bitwarden)
+    - repoURL: https://github.com/andreffs18/homelab.git
+      targetRevision: master
+      path: apps/monitoring
+      directory:
+        exclude: application.yaml
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
