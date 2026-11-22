@@ -3,10 +3,16 @@ kind: Ingress
 metadata:
   name: whoami
   namespace: whoami
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
 spec:
   ingressClassName: nginx
+  tls:
+    - hosts:
+        - whoami.home.andreffs.com
+      secretName: whoami-tls
   rules:
-    - host: whoami.homelab.local
+    - host: whoami.home.andreffs.com
       http:
         paths:
           - path: /

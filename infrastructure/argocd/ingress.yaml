@@ -4,11 +4,15 @@ metadata:
   name: argocd
   namespace: argocd
   annotations:
-    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    cert-manager.io/cluster-issuer: letsencrypt
 spec:
   ingressClassName: nginx
+  tls:
+    - hosts:
+        - argocd.home.andreffs.com
+      secretName: argocd-tls
   rules:
-    - host: argocd.homelab.local
+    - host: argocd.home.andreffs.com
       http:
         paths:
           - path: /

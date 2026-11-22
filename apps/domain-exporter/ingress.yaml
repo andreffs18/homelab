@@ -3,10 +3,16 @@ kind: Ingress
 metadata:
   name: domain-exporter
   namespace: domain-exporter
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
 spec:
   ingressClassName: nginx
+  tls:
+    - hosts:
+        - domains.home.andreffs.com
+      secretName: domain-exporter-tls
   rules:
-    - host: domains.homelab.local
+    - host: domains.home.andreffs.com
       http:
         paths:
           - path: /

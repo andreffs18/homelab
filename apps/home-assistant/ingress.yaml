@@ -3,10 +3,16 @@ kind: Ingress
 metadata:
   name: home-assistant
   namespace: home-assistant
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
 spec:
   ingressClassName: nginx
+  tls:
+    - hosts:
+        - homeassistant.home.andreffs.com
+      secretName: home-assistant-tls
   rules:
-    - host: homeassistant.homelab.local
+    - host: homeassistant.home.andreffs.com
       http:
         paths:
           - path: /

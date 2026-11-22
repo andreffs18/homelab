@@ -31,39 +31,39 @@ data:
   services.yaml: |
     - Infrastructure:
         - ArgoCD:
-            href: http://argocd.homelab.local
+            href: https://argocd.home.andreffs.com
             description: GitOps continuous delivery
             icon: argo-cd.png
         # - Pi-hole:
-        #     href: http://pihole.homelab.local/admin
+        #     href: https://pihole.home.andreffs.com/admin
         #     description: DNS sinkhole & ad blocker
         #     icon: pi-hole.png
 
     - Monitoring:
         - Grafana:
-            href: http://grafana.homelab.local
+            href: https://grafana.home.andreffs.com
             description: Metrics & dashboards
             icon: grafana.png
         - Prometheus:
-            href: http://prometheus.homelab.local
+            href: https://prometheus.home.andreffs.com
             description: Metrics collection
             icon: prometheus.png
         - Alertmanager:
-            href: http://alertmanager.homelab.local
+            href: https://alertmanager.home.andreffs.com
             description: Alert routing
             icon: alertmanager.png
         - Domain Exporter:
-            href: http://domains.homelab.local/metrics
+            href: https://domains.home.andreffs.com/metrics
             description: Domain expiry tracking
             icon: mdi-web
 
     - Apps:
         - Home Assistant:
-            href: http://homeassistant.homelab.local
+            href: https://homeassistant.home.andreffs.com
             description: Home automation
             icon: home-assistant.png
         - Whoami:
-            href: http://whoami.homelab.local
+            href: https://whoami.home.andreffs.com
             description: Debug/echo service
             icon: docker-moby.png
 

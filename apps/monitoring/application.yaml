@@ -16,11 +16,22 @@ spec:
         grafana:
           enabled: true
           adminPassword: changeme  # TODO: replace with sealed secret
+          grafana.ini:
+            server:
+              root_url: https://grafana.home.andreffs.com
+            security:
+              cookie_secure: true
           ingress:
             enabled: true
             ingressClassName: nginx
+            annotations:
+              cert-manager.io/cluster-issuer: letsencrypt
             hosts:
-              - grafana.homelab.local
+              - grafana.home.andreffs.com
+            tls:
+              - secretName: grafana-tls
+                hosts:
+                  - grafana.home.andreffs.com
           dashboardProviders:
             dashboardproviders.yaml:
               apiVersion: 1
@@ -71,9 +82,16 @@ spec:
           ingress:
             enabled: true
             ingressClassName: nginx
+            annotations:
+              cert-manager.io/cluster-issuer: letsencrypt
             hosts:
-              - prometheus.homelab.local
+              - prometheus.home.andreffs.com
+            tls:
+              - secretName: prometheus-tls
+                hosts:
+                  - prometheus.home.andreffs.com
           prometheusSpec:
+            externalUrl: https://prometheus.home.andreffs.com
             # Only pick up ServiceMonitors/PrometheusRules labelled release=monitoring
             # (the Helm release name), from any namespace
             serviceMonitorSelector:
@@ -100,11 +118,19 @@ spec:
 
         alertmanager:
           enabled: true
+          alertmanagerSpec:
+            externalUrl: https://alertmanager.home.andreffs.com
           ingress:
             enabled: true
             ingressClassName: nginx
+            annotations:
+              cert-manager.io/cluster-issuer: letsencrypt
             hosts:
-              - alertmanager.homelab.local
+              - alertmanager.home.andreffs.com
+            tls:
+              - secretName: alertmanager-tls
+                hosts:
+                  - alertmanager.home.andreffs.com
 
         nodeExporter:
           enabled: true
