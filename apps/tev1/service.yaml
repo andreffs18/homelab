@@ -2,7 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: tev1
-  namespace: laya
+  namespace: tev1
 spec:
   # ClusterIP: reachable only through the ingress (https://tev1.home.andreffs.com)
   # Ollama has no auth; keep this on your LAN only.
