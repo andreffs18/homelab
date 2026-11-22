@@ -1,0 +1,12 @@
+# Pi-hole v6 settings, as FTLCONF_<section>_<setting> env vars (the v5 names were removed).
+# The web password is not here: it comes from the pihole-web-password Secret (see externalsecret.yaml).
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pihole-env
+  namespace: pihole
+data:
+  TZ: Europe/London
+  FTLCONF_dns_upstreams: "1.1.1.1;1.0.0.1"
+  FTLCONF_dns_dnssec: "false"
+  FTLCONF_dns_listeningMode: all
