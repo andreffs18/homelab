@@ -4,12 +4,12 @@ metadata:
   name: home-assistant
   namespace: home-assistant
   annotations:
-    metallb.io/loadBalancerIPs: 192.168.1.152
 #    # Tailscale operator will expose this service on your tailnet
 #    tailscale.com/expose: "true"
 #    tailscale.com/hostname: home-assistant
 spec:
-  type: LoadBalancer
+  # ClusterIP: reachable only through the ingress (homeassistant.home.andreffs.com)
+  type: ClusterIP
   selector:
     app: home-assistant
   ports:
