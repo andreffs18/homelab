@@ -3,10 +3,16 @@ kind: Ingress
 metadata:
   name: homepage
   namespace: homepage
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
 spec:
   ingressClassName: nginx
+  tls:
+    - hosts:
+        - home.andreffs.com
+      secretName: homepage-tls
   rules:
-    - host: homelab.local
+    - host: home.andreffs.com
       http:
         paths:
           - path: /

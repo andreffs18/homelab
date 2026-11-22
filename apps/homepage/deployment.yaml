@@ -18,7 +18,7 @@ spec:
           image: ghcr.io/gethomepage/homepage:latest
           env:
             - name: HOMEPAGE_ALLOWED_HOSTS
-              value: "homelab.local"
+              value: "home.andreffs.com"
           ports:
             - containerPort: 3000
           volumeMounts:
