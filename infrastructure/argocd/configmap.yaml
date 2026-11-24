@@ -6,4 +6,4 @@ metadata:
 data:
   # Run ArgoCD server over plain HTTP behind ingress-nginx, which terminates TLS.
   # Without this ArgoCD would redirect to HTTPS itself and cause a redirect loop.
-  # server.insecure: "true"
+  server.insecure: "true"
